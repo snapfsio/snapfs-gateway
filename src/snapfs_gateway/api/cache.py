@@ -19,6 +19,9 @@ from typing import List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from ..bus import bus
+from ..cache_keys import build_cache_key
+
 router = APIRouter(prefix="/cache", tags=["cache"])
 
 
@@ -39,13 +42,32 @@ class CacheResult(BaseModel):
 @router.post("/batch", response_model=List[CacheResult])
 async def cache_batch(probes: List[FileProbe]):
     """
-    Probe the cache for a batch of file metadata records.
+    Probe the L1 cache for a batch of file metadata records.
 
-    For now, this stub implementation always returns MISS.
-    Later, this will consult snapfs-agent-mysql (or other backing cache).
+    L1 = Redis. For now, we do not fall back to L2 (MySQL); MISS means
+    the scanner should hash and send a file.upsert event.
     """
-    # TODO: integrate with snapfs-agent-mysql cache logic
     results: List[CacheResult] = []
-    for _ in probes:
-        results.append(CacheResult(status="MISS"))
+
+    for p in probes:
+        key = build_cache_key(
+            path=p.path,
+            size=p.size,
+            mtime=p.mtime,
+            inode=p.inode,
+            dev=p.dev,
+        )
+        entry = await bus.cache_get(key)
+
+        if entry and "hash" in entry and "algo" in entry:
+            results.append(
+                CacheResult(
+                    status="HIT",
+                    algo=entry["algo"],
+                    hash=entry["hash"],
+                )
+            )
+        else:
+            results.append(CacheResult(status="MISS"))
+
     return results

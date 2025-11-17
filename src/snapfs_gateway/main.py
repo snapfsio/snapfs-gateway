@@ -18,6 +18,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from .api import cache, ingest, query
+from .bus import bus
 from .config import settings
 
 
@@ -26,6 +27,10 @@ def create_app() -> FastAPI:
         title="SnapFS Gateway",
         version="0.1.0",
     )
+
+    @app.on_event("startup")
+    async def startup():
+        await bus.connect()
 
     @app.get("/healthz")
     async def healthz():
@@ -42,9 +47,6 @@ app = create_app()
 
 
 def main():
-    """
-    Console entrypoint (snapfs-gateway) for running the server via uvicorn.
-    """
     uvicorn.run(
         "snapfs_gateway.main:app",
         host="0.0.0.0",

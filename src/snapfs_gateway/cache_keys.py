@@ -14,18 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
-import os
-
-from pydantic import BaseModel
+from typing import Optional
 
 
-class Settings(BaseModel):
-    env: str = os.getenv("SNAPFS_ENV", "dev")
-    mysql_url: str = os.getenv("SNAPFS_MYSQL_URL") or None
-    redis_url: str = os.getenv("REDIS_URL") or "redis://redis:6379/0"
-    # future: JWT secret, token issuer, etc.
+def build_cache_key(
+    *,
+    path: str,
+    size: int,
+    mtime: float,
+    inode: Optional[int] = None,
+    dev: Optional[int] = None,
+) -> str:
+    """
+    Build a stable cache key for a file probe.
 
-
-settings = Settings()
+    Prefer (dev, inode, size, mtime) when available to be robust
+    against path moves. Fallback to path-based key if inode/dev
+    are missing or zero.
+    """
+    mti = int(mtime)
+    if dev and inode:
+        return f"snapfs:cache:inode:{dev}:{inode}:{size}:{mti}"
+    return f"snapfs:cache:path:{path}:{size}:{mti}"

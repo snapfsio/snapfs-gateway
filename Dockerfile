@@ -18,10 +18,10 @@ COPY src /app/src
 # Install gateway package + runtime deps via pyproject.toml
 RUN pip install --no-cache-dir .
 
-# Runtime configuration (placeholder; override in compose/k8s)
-# Runtime configuration (placeholder; override in compose/k8s)
-ENV SNAPFS_ENV="prod"
-ENV SNAPFS_MYSQL_URL=""
+# Runtime configuration (override in compose/k8s)
+ENV SNAPFS_ENV="prod" \
+    SNAPFS_MYSQL_URL="" \
+    REDIS_URL="redis://redis:6379/0"
 
 EXPOSE 8000
 
