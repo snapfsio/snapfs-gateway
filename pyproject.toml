@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "snapfs-gateway"
+version = "0.1.0"
+description = "HTTP gateway and API layer for SnapFS (cache, ingest, query)."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+
+authors = [
+  { name = "Ryan Galloway", email = "ryan@rsg.io" }
+]
+
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "pydantic>=2.7.0",
+]
+
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Framework :: FastAPI",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/snapfsio/snapfs-gateway"
+Source   = "https://github.com/snapfsio/snapfs-gateway"
+Issues   = "https://github.com/snapfsio/snapfs-gateway/issues"
+
+[project.scripts]
+snapfs-gateway = "snapfs_gateway.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
