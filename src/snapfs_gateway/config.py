@@ -23,9 +23,20 @@ from pydantic import BaseModel
 
 class Settings(BaseModel):
     env: str = os.getenv("SNAPFS_ENV", "dev")
-    mysql_url: str = os.getenv("SNAPFS_MYSQL_URL") or None
+
+    # L1 cache config
     redis_url: str = os.getenv("REDIS_URL") or "redis://redis:6379/0"
-    # future: JWT secret, token issuer, etc.
+
+    # MySQL / L2 cache config
+    mysql_url: str = os.getenv("SNAPFS_MYSQL_URL") or None
+
+    # NATS / JetStream config
+    nats_url: str = os.getenv("NATS_URL", "nats://nats:4222")
+    # Stream that holds file events, e.g. SNAPS_FILES
+    nats_stream: str = os.getenv("SNAPFS_STREAM", "SNAPFS_FILES")
+
+    # Default subject for file events
+    default_subject: str = os.getenv("SNAPFS_SUBJECT", "snapfs.files")
 
 
 settings = Settings()

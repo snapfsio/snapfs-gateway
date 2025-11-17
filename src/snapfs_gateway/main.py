@@ -17,7 +17,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from .api import cache, ingest, query
+from .api import cache, ingest, query, stream
 from .bus import bus
 from .config import settings
 
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(cache.router)
     app.include_router(ingest.router)
     app.include_router(query.router)
+    app.include_router(stream.router)
 
     return app
 
