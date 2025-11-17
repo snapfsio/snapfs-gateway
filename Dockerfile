@@ -6,40 +6,28 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Copy the app
-COPY gateway.py /app/gateway.py
-
-# OS deps (curl only for HEALTHCHECK; remove if you don't use it)
+# System deps (curl only for HEALTHCHECK)
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Python deps:
-# - fastapi + uvicorn[standard] → websockets + httptools
-# - nats-py → NATS/JetStream client
-# - redis → Redis (L2)
-# - aiomysql → MySQL fallback (L3)
-RUN pip install --no-cache-dir \
-      cryptography \
-      fastapi "uvicorn[standard]" \
-      nats-py \
-      redis \
-      aiomysql
+# Copy project files
+COPY pyproject.toml README.md LICENSE /app/
+COPY src /app/src
 
-# Sensible defaults; override via docker compose or `docker run -e ...`
-ENV NATS_URL="nats://nats:4222" \
-    SNAPFS_STREAM="SNAPFS_FILES" \
-    SNAPFS_SUBJECT="snapfs.files" \
-    L2_BACKEND="redis" \
-    REDIS_URL="redis://redis:6379/0" \
-    SQL_FALLBACK="on" \
-    MYSQL_URL="mysql://snapfs:snapfs@mysql:3306/snapfs"
+# Install gateway package + runtime deps via pyproject.toml
+RUN pip install --no-cache-dir .
+
+# Runtime configuration (placeholder; override in compose/k8s)
+# Runtime configuration (placeholder; override in compose/k8s)
+ENV SNAPFS_ENV="prod"
+ENV SNAPFS_MYSQL_URL=""
 
 EXPOSE 8000
 
-# Optional: basic container-level healthcheck
-# (If you added a /healthz route, point to that; /docs is fine for PoC.)
+# Healthcheck hits the /healthz endpoint we defined in main.py
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=10 \
-  CMD curl -fsS http://127.0.0.1:8000/docs >/dev/null || exit 1
+  CMD curl -fsS http://127.0.0.1:8000/healthz >/dev/null || exit 1
 
-CMD ["uvicorn", "gateway:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the FastAPI app via uvicorn
+CMD ["uvicorn", "snapfs_gateway.main:app", "--host", "0.0.0.0", "--port", "8000"]
