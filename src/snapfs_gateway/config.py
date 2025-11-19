@@ -26,9 +26,7 @@ class Settings(BaseModel):
 
     # L1 cache config
     redis_url: str = os.getenv("REDIS_URL") or "redis://redis:6379/0"
-
-    # MySQL / L2 cache config
-    mysql_url: str = os.getenv("SNAPFS_MYSQL_URL") or None
+    default_ttl: int = int(os.getenv("SNAPFS_CACHE_TTL", "86400"))  # 1 day
 
     # NATS / JetStream config
     nats_url: str = os.getenv("NATS_URL", "nats://nats:4222")
