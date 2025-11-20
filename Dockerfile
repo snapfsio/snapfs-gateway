@@ -20,7 +20,8 @@ RUN pip install --no-cache-dir .
 
 # Runtime configuration (override in compose/k8s)
 ENV SNAPFS_ENV="prod" \
-    REDIS_URL="redis://redis:6379/0"
+    REDIS_URL="redis://redis:6379/0" \
+    NATS_URL="nats://nats:4222"
 
 EXPOSE 8000
 

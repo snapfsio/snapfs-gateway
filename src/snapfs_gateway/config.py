@@ -25,11 +25,11 @@ class Settings(BaseModel):
     env: str = os.getenv("SNAPFS_ENV", "dev")
 
     # L1 cache config
-    redis_url: str = os.getenv("REDIS_URL") or "redis://redis:6379/0"
-    default_ttl: int = int(os.getenv("SNAPFS_CACHE_TTL", "86400"))  # 1 day
+    redis_url: str = os.getenv("REDIS_URL") or "redis://localhost:6379/0"
+    default_ttl: int = int(os.getenv("SNAPFS_CACHE_TTL", "604800"))  # 7 days
 
     # NATS / JetStream config
-    nats_url: str = os.getenv("NATS_URL", "nats://nats:4222")
+    nats_url: str = os.getenv("NATS_URL", "nats://localhost:4222")
     # Stream that holds file events, e.g. SNAPS_FILES
     nats_stream: str = os.getenv("SNAPFS_STREAM", "SNAPFS_FILES")
 
