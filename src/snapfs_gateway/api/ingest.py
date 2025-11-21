@@ -96,7 +96,7 @@ async def ingest_events(
             ttl=3600,
         )
 
-    # 2) Publish to JetStream as a single message with all events
+    # 2) Publish to JetStream as a single message with all events for agents
     await bus.publish_events(
         subject=subj,
         events=[e.dict() for e in body.events],

@@ -32,6 +32,7 @@ class Bus:
     """
     Shared infra access:
     - Redis (L1 cache)
+    - MySQL (L2 cache) -- see db.py
     - NATS + JetStream (event log)
     """
 

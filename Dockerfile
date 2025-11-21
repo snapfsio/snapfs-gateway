@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir .
 
 # Runtime configuration (override in compose/k8s)
 ENV SNAPFS_ENV="prod" \
+    MYSQL_URL="mysql+pymysql://snapfs:snapfs@localhost:3306/snapfs" \
     REDIS_URL="redis://redis:6379/0" \
     NATS_URL="nats://nats:4222"
 

@@ -38,18 +38,23 @@ class CacheResult(BaseModel):
     algo: Optional[str] = None
     hash: Optional[str] = None
 
+    # TODO: add mtime, inode, dev size back to response for client validation?
+    # mtime: Optional[float] = None
+    # size: Optional[int] = None
+    # inode: Optional[int] = None
+    # dev: Optional[int] = None
+
 
 @router.post("/batch", response_model=List[CacheResult])
 async def cache_batch(probes: List[FileProbe]):
     """
-    Probe the L1 cache for a batch of file metadata records.
-
-    L1 = Redis. For now, we do not fall back to L2 (MySQL); MISS means
-    the scanner should hash and send a file.upsert event.
+    Probe L1 (Redis). On MISS, probe L2 (MySQL).
     """
     results: List[CacheResult] = []
 
-    for p in probes:
+    # First pass: L1 (Redis)
+    misses = []
+    for i, p in enumerate(probes):
         key = build_cache_key(
             path=p.path,
             size=p.size,
@@ -69,5 +74,28 @@ async def cache_batch(probes: List[FileProbe]):
             )
         else:
             results.append(CacheResult(status="MISS"))
+            misses.append((i, p, key))
+
+    # Second pass: L2 (MySQL)
+    if misses:
+        # lazy import to avoid circulars
+        from ..db import lookup_file_hash
+
+        for idx, probe, key in misses:
+            hit = lookup_file_hash(probe)
+            if not hit:
+                continue
+
+            algo, hash_hex = hit
+
+            # Hydrate Redis L1
+            await bus.cache_set(key, {"algo": algo, "hash": hash_hex})
+
+            # Flip MISS to HIT
+            results[idx] = CacheResult(
+                status="HIT",
+                algo=algo,
+                hash=hash_hex,
+            )
 
     return results

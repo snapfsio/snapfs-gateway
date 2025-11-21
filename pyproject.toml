@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "snapfs-gateway"
-version = "0.1.3"
+version = "0.1.4"
 description = "HTTP gateway and API layer for SnapFS (cache, ingest, query)."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -16,10 +16,11 @@ authors = [
 
 dependencies = [
   "fastapi>=0.115.0",
-  "uvicorn[standard]>=0.30.0",
   "pydantic>=2.7.0",
-  "redis>=5.0.0",
+  "pymysql>=1.1.2",
   "nats-py>=2.6.0",
+  "redis>=5.0.0",
+  "uvicorn[standard]>=0.30.0",
 ]
 
 classifiers = [

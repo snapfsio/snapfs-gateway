@@ -60,13 +60,15 @@ Scanner → HTTP /ingest ─────┐
 
 ## Responsibilities
 
-| Component                 | Purpose                                                            |
-| ------------------------- | ------------------------------------------------------------------ |
-| **Gateway**               | HTTP interface, Redis L1, WS streaming, NATS JetStream abstraction |
-| **Scanner (snapfs scan)** | Hash files, send `file.upsert` to Gateway                          |
-| **Agents**                | Consume events via WebSocket, write to backend (MySQL, ES, etc.)   |
-| **Redis**                 | L1 hot cache for hash lookups                                      |
-| **NATS JetStream**        | Durable event log & consumer management                            |
+| Component               | Role                                                               |
+| ----------------------- | ------------------------------------------------------------------ |
+| **Gateway**             | HTTP API, Redis L1, WS streaming, JetStream abstraction, ingestion |
+| **Scanner**             | Hashes files, probes cache, publishes file events                  |
+| **MySQL Agent**         | Writes ingested events to MySQL (L2 authoritative store)           |
+| **Elasticsearch Agent** | Indexes file metadata for search & dashboards                      |
+| **Other Agents**        | Analytics, monitoring, cleanup, retention, backups, etc.           |
+| **Redis**               | Hot L1 lookup cache to avoid rehashing                             |
+| **JetStream / NATS**    | Durable event log, consumer tracking, reliability guarantees       |
 
 ## Status
 
