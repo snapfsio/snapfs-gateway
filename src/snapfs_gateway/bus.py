@@ -90,7 +90,9 @@ class Bus:
             return None
         return json.loads(val)
 
-    async def cache_set(self, key: str, value: Dict[str, Any], ttl: Optional[int] = settings.default_ttl):
+    async def cache_set(
+        self, key: str, value: Dict[str, Any], ttl: Optional[int] = settings.default_ttl
+    ):
         if not self._redis:
             return
         await self._redis.set(key, json.dumps(value), ex=ttl)

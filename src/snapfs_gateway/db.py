@@ -43,7 +43,7 @@ def lookup_file_hash(probe):
 
     sql = """
         SELECT algo, hash
-        FROM files
+        FROM file_cache
         WHERE path = %s
         LIMIT 1;
     """

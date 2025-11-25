@@ -46,14 +46,18 @@ class Settings(BaseModel):
     @property
     def mysql_url_parsed(self):
         u = urlparse(self.mysql_url)
-        return type("DBURL", (object,), {
-            "scheme": u.scheme,
-            "username": u.username,
-            "password": u.password,
-            "host": u.hostname,
-            "port": u.port,
-            "database": u.path.lstrip("/"),
-        })()
+        return type(
+            "DBURL",
+            (object,),
+            {
+                "scheme": u.scheme,
+                "username": u.username,
+                "password": u.password,
+                "host": u.hostname,
+                "port": u.port,
+                "database": u.path.lstrip("/"),
+            },
+        )()
 
 
 settings = Settings()
