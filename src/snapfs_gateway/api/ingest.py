@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__doc__ = """
+Contains the /ingest API endpoint for receiving events from scanners/clients.
+"""
+
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Query
@@ -22,6 +26,7 @@ from pydantic import BaseModel
 from ..bus import bus
 from ..cache_keys import build_cache_key
 from ..config import settings
+from ..path_utils import normalize_path
 
 router = APIRouter(tags=["ingest"])
 
@@ -53,6 +58,7 @@ async def ingest_events(
     Ingest a list of events from scanners/clients.
 
     For now we:
+    - Normalize file paths into canonical SnapFS form
     - Seed Redis L1 cache for file.upsert events that include algo + hash
     - Publish the entire event list to JetStream for downstream agents
     """
@@ -67,7 +73,14 @@ async def ingest_events(
         data = ev.data or {}
         algo = data.get("algo")
         hash_hex = data.get("hash")
-        path = data.get("path")
+
+        raw_path = data.get("path")
+        path = normalize_path(raw_path) if raw_path is not None else None
+        if path is not None:
+            # Make sure the normalized path is what gets published
+            data["path"] = path
+            ev.data = data  # explicit, even though `data` is already the same dict
+
         size = data.get("size")
         mtime = data.get("mtime")
 

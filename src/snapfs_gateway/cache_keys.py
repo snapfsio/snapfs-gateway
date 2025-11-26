@@ -32,6 +32,7 @@ def build_cache_key(
     against path moves. Fallback to path-based key if inode/dev
     are missing or zero.
     """
+    # TODO: consider hashing the path if worried about key length
     mti = int(mtime)
     if dev and inode:
         return f"snapfs:cache:inode:{dev}:{inode}:{size}:{mti}"
