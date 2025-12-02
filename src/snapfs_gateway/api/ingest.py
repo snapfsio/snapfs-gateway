@@ -106,7 +106,7 @@ async def ingest_events(
                 "algo": algo,
                 "hash": hash_hex,
             },
-            ttl=3600,
+            ttl=settings.default_ttl,
         )
 
     # 2) Publish to JetStream as a single message with all events for agents
