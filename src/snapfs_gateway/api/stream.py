@@ -81,14 +81,24 @@ async def stream_events(
             stream=stream_name,
         )
     except Exception as e:
-        await websocket.close(code=1011)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to create JetStream consumer: {e}"
+        # Log the actual error server-side
+        print(
+            f"[gateway] Failed to create JetStream consumer for durable={durable!r}: {e!r}"
         )
+        # Tell the client what went wrong
+        await websocket.send_json(
+            {
+                "type": "error",
+                "message": f"Failed to create JetStream consumer for durable={durable}: {e}",
+            }
+        )
+        await websocket.close(code=1011)
+        return
 
     pending_batches: Dict[str, List] = {}
 
     try:
+        print(f"[gateway] Client connected for subject={subject!r} durable={durable!r}")
         while True:
             # Fetch up to `batch` messages
             try:
@@ -157,6 +167,12 @@ async def stream_events(
                 # Treat anything else as "do not ack"; messages will be redelivered
                 pending_batches.pop(batch_id, None)
 
-    except WebSocketDisconnect:
+    except WebSocketDisconnect as e:
         # Client disconnected; unacked messages will be redelivered
+        print(f"[gateway] Client durable={durable!r} disconnected from stream: {e}")
+        return
+
+    except Exception as e:
+        print(f"[gateway] Error in stream for durable={durable!r}: {e!r}")
+        await websocket.close(code=1011)
         return

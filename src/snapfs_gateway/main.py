@@ -25,7 +25,7 @@ from .config import settings
 def create_app() -> FastAPI:
     app = FastAPI(
         title="SnapFS Gateway",
-        version="0.1.6",
+        version="0.1.7",
     )
 
     @app.on_event("startup")
