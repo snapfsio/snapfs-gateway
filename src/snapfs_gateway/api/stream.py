@@ -17,9 +17,9 @@
 import asyncio
 import json
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 
 from ..bus import bus
 from ..config import settings

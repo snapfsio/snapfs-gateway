@@ -40,24 +40,28 @@ def lookup_file_hash(probe):
     Try to find a matching row in MySQL L2 cache.
     Returns (algo, hash) if found, else None.
     """
-
-    sql = """
+    sql_base = """
         SELECT algo, hash
         FROM file_cache
         WHERE path = %s
-        LIMIT 1;
+          AND size = %s
+          AND mtime = %s
     """
 
-    # TODO: harden query with inode + dev?
-    # leave mtime, dev and size checks to client side for now
-    # AND inode = %s
-    # AND dev = %s
+    params = [probe.path, probe.size, int(probe.mtime)]
+
+    # Optionally include inode/dev when present
+    # TODO: consider dropping path when inode/dev are present for file moves
+    if probe.inode is not None and probe.dev is not None:
+        sql = sql_base + " AND inode = %s AND dev = %s LIMIT 1;"
+        params.extend([probe.inode, probe.dev])
+    else:
+        sql = sql_base + " LIMIT 1;"
 
     conn = get_mysql_connection()
     try:
         with conn.cursor() as cur:
-            raw_sql = cur.mogrify(sql, (probe.path))
-            cur.execute(raw_sql)
+            cur.execute(sql, tuple(params))
             row = cur.fetchone()
             if not row:
                 return None

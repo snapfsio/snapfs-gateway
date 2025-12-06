@@ -28,7 +28,7 @@ router = APIRouter(prefix="/cache", tags=["cache"])
 class FileProbe(BaseModel):
     path: str
     size: int
-    mtime: float
+    mtime: int
     inode: Optional[int] = None
     dev: Optional[int] = None
 
